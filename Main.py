@@ -1,84 +1,124 @@
 import pandas as pd
 import sys
+sys.path.append(".")
+import Learner
+
+DEFAULT_ITERATIONS = 100
+DEFAULT_LEARNING_RATE = .001
+DEFAULT_STARTING_WEIGHT = 1
+LOG_DECIMAL_PLACES = 4
+LOG_FILENAME = "log.txt"
 
 def Main():
 
+    trainingDataset, testDataset, iterations, learningRate, startingWeights = handleCommandLineParameters()
+
+    logFile = safeLoadFile(LOG_FILENAME, "a")
+
+    print("\nBegin learning...")
+    learner = Learner.Learner(trainingDataset, iterations, learningRate, startingWeights)
+    trainingOutput = learner.learnSet(trainingDataset)
+    print("Learning complete!")
+    logLearnerOutput(logFile, formatTrainingOutput(trainingOutput))
+
+    print("\nBegin testing...")
+    testOutput = learner.testSet(testDataset)
+    print("Testing complete!")
+    logLearnerOutput(logFile, formatTestOutput(testOutput))
+
+    print("\nLogging results to", LOG_FILENAME)
+
+
+
+def handleCommandLineParameters():
+
     if len(sys.argv) < 2:
-        print("Not enough arguments, please provide the filename of the dataset.")
+        print("Not enough arguments, please provide the filename of the training dataset.")
         return
 
-
-    data = safeLoadDataset(sys.argv[1])
-
-    iterations = 200
+    print()
+    trainingDataset = safeLoadDataset(sys.argv[1])
+    testDataset = trainingDataset
     if len(sys.argv) >= 3:
-        iterations = int(sys.argv[2])
+        testDataset = safeLoadDataset(sys.argv[2])
+
+    iterations = DEFAULT_ITERATIONS
+    if len(sys.argv) >= 4:
+        iterations = int(sys.argv[3])
         print("Iterations:", iterations, "(set by user)")
     else:
         print("Iterations:", iterations, "(default)")
 
-    learningRate = .001
-    if len(sys.argv) >= 4:
-        learningRate = int(sys.argv[3])
+    learningRate = DEFAULT_LEARNING_RATE
+    if len(sys.argv) >= 5:
+        learningRate = float(sys.argv[4])
         print("Learning rate:", learningRate, "(set by user)")
     else:
         print("Learning rate:", learningRate, "(default)")
 
-    weights = [1, 1, 1, 1, 1, 1]
+    startingWeights = [DEFAULT_STARTING_WEIGHT] * 6
+    if len(sys.argv) >= 6:
+        startingWeight = float(sys.argv[5])
+        startingWeights = [startingWeight] * 6
+        print("Starting weights:", startingWeights, "(set by user)")
+    else:
+        print("Starting weights:", startingWeights, "(default)")
 
-    for i in range(iterations):
-        dE = predict(data, weights, i)
-        weights = calculateNewWeights(weights, dE, learningRate)
-        if i == iterations - 1:
-            print("Final derivative errors:", dE)
-
-    print("Final weights:", weights)
+    return trainingDataset, testDataset, iterations, learningRate, startingWeights
 
 
 def safeLoadDataset(filename):
     try:
         print("Trying to load dataset:", filename)
         data = pd.read_csv(filename)
-        print("Successfully loaded dataset:", filename)
+        print("Successfully loaded dataset:", filename, "\n")
         return data
     except FileNotFoundError:
         print("File", filename, " not found, exiting.")
         return
 
 
-def calculateNewWeights(weights, dE, learningRate):
-    newWeights = [0, 0, 0, 0, 0, 0]
-    for i in range(len(weights)):
-        newWeights[i] = weights[i] - (learningRate * dE[i])
-    return newWeights
+def safeLoadFile(filename, mode):
+    try:
+        return open(filename, mode)
+    except OSError:
+        print("Could not open/read file:", filename)
+        sys.exit()
 
 
-def predict(data, weights, iteration):
+def logLearnerOutput(logFile, formattedOutput):
+    print(formattedOutput)
+    logFile.write(formattedOutput)
 
-    numRows = data.shape[0]
-    numCols = data.shape[1]
-    meanSquaredError = 0
-    derivativeErrors = [0, 0, 0, 0, 0, 0]
 
-    for i in data.iterrows():
-        prediction = 0
-        for x in range(numCols - 1):
-            prediction += (weights[x] * i[1][x])
+def formatTrainingOutput(learnerOutput):
+    formattedOutput = "\n"
+    formattedOutput += "Training parameters:\n"
+    formattedOutput += "\tIterations: " + str(learnerOutput[0]) + "\n"
+    formattedOutput += "\tLearning rate: " + str(learnerOutput[1]) + "\n"
+    formattedOutput += "\tStarting weights: " + str(learnerOutput[2]) + "\n"
 
-        actual = i[1][numCols - 1]
-        error = prediction - actual
+    derivativeErrors = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[3]]
+    weights = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[4]]
 
-        for e in range(numCols - 1):
-            derivativeErrors[e] += (error * i[1][e])
+    formattedOutput += "Training results:\n"
+    formattedOutput += "\tFinal derivative error per attribute: " + str(derivativeErrors) + "\n"
+    formattedOutput += "\tFinal weight per attribute: " + str(weights) + "\n"
+    formattedOutput += "\tFinal mean squared error: " + str(learnerOutput[5])
+    return formattedOutput
 
-        meanSquaredError += pow(error, 2)
 
-    meanSquaredError /= (2 * numRows)
-    print("Mean squared error for iteration ", iteration, ": ", round(meanSquaredError, 4))
+def formatTestOutput(learnerOutput):
+    formattedOutput = "\n"
 
-    derivativeErrors = [dE / numRows for dE in derivativeErrors]
+    derivativeErrors = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[0]]
+    weights = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[1]]
 
-    return derivativeErrors
+    formattedOutput += "Test results:\n"
+    formattedOutput += "\tDerivative error per attribute: " + str(derivativeErrors) + "\n"
+    formattedOutput += "\tWeights per attribute: " + str(weights) + "\n"
+    formattedOutput += "\tTest mean squared error: " + str(learnerOutput[2])
+    return formattedOutput
 
 
 Main()

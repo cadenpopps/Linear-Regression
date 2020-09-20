@@ -1,0 +1,13 @@
+
+Training parameters:
+	Iterations: 1000
+	Learning rate: 0.005
+	Starting weights: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5]
+Training results:
+	Final derivative error per attribute: [-0.0303, 0.0381, 0.0008, 0.0016, -0.0016, 0.0044]
+	Final weight per attribute: [0.5232, -0.7159, 0.4042, 0.4323, 0.633, 0.862]
+	Final mean squared error: 4.877004617678476
+Test results:
+	Derivative error per attribute: [-0.2358, -0.0901, -0.2264, -0.2412, -0.2414, -0.3355]
+	Weights per attribute: [0.5232, -0.7159, 0.4042, 0.4323, 0.633, 0.862]
+	Test mean squared error: 4.7310144232120726
