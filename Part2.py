@@ -1,31 +1,47 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 import sys
 sys.path.append(".")
-import Learner
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error, r2_score
 
 DEFAULT_ITERATIONS = 100
 DEFAULT_LEARNING_RATE = .001
 DEFAULT_STARTING_WEIGHT = 1
 LOG_DECIMAL_PLACES = 4
-LOG_FILENAME = "log.txt"
+LOG_FILENAME = "scikit_log.txt"
 
 def Main():
 
-    trainingDataset, testDataset, iterations, learningRate, startingWeights = handleCommandLineParameters()
+    trainingDataset, testDataset = handleCommandLineParameters()
 
     logFile = safeLoadFile(LOG_FILENAME, "a")
 
+    training_x, training_y = processDataset(trainingDataset)
+    test_x, test_y = processDataset(testDataset)
 
-    print("\nBegin learning...")
-    learner = Learner.Learner(trainingDataset, iterations, learningRate, startingWeights)
-    trainingOutput = learner.learnSet(trainingDataset)
+    print("Begin learning...")
+    regr = linear_model.LinearRegression()
+    regr.fit(training_x, training_y)
     print("Learning complete!")
-    logLearnerOutput(logFile, formatTrainingOutput(trainingOutput))
+
 
     print("\nBegin testing...")
-    testOutput = learner.testSet(testDataset)
+    test_pred = regr.predict(test_x)
     print("Testing complete!")
-    logLearnerOutput(logFile, formatTestOutput(testOutput))
+
+    logScikitOutput(logFile, formatScikitOutput(regr, test_x, test_y, test_pred))
+
+    plot_x = [x[1] for x in test_x]
+    print(len(plot_x))
+    print(len(test_y))
+    plt.scatter(plot_x, test_y,  color='black')
+    plt.plot(plot_x, test_pred, color='blue', linewidth=3)
+
+    plt.xticks(())
+    plt.yticks(())
+
+    plt.show()
 
     print("Logging results to", LOG_FILENAME)
 
@@ -42,29 +58,7 @@ def handleCommandLineParameters():
     if len(sys.argv) >= 3:
         testDataset = safeLoadDataset(sys.argv[2])
 
-    iterations = DEFAULT_ITERATIONS
-    if len(sys.argv) >= 4:
-        iterations = int(sys.argv[3])
-        print("Iterations:", iterations, "(set by user)")
-    else:
-        print("Iterations:", iterations, "(default)")
-
-    learningRate = DEFAULT_LEARNING_RATE
-    if len(sys.argv) >= 5:
-        learningRate = float(sys.argv[4])
-        print("Learning rate:", learningRate, "(set by user)")
-    else:
-        print("Learning rate:", learningRate, "(default)")
-
-    startingWeights = [DEFAULT_STARTING_WEIGHT] * 6
-    if len(sys.argv) >= 6:
-        startingWeight = float(sys.argv[5])
-        startingWeights = [startingWeight] * 6
-        print("Starting weights:", startingWeights, "(set by user)")
-    else:
-        print("Starting weights:", startingWeights, "(default)")
-
-    return trainingDataset, testDataset, iterations, learningRate, startingWeights
+    return trainingDataset, testDataset
 
 
 def safeLoadDataset(filename):
@@ -77,6 +71,18 @@ def safeLoadDataset(filename):
         print("File", filename, " not found, exiting.")
         return
 
+def processDataset(dataset):
+    attributes = []
+    outputs = []
+    datasetWidth = dataset.shape[1] - 1
+    for i in dataset.iterrows():
+        rowAttributes = []
+        for x in range(datasetWidth):
+            rowAttributes.append(i[1][x])
+        attributes.append(rowAttributes)
+        outputs.append(i[1][-1])
+    return attributes, outputs
+
 
 def safeLoadFile(filename, mode):
     try:
@@ -86,39 +92,16 @@ def safeLoadFile(filename, mode):
         sys.exit()
 
 
-def logLearnerOutput(logFile, formattedOutput):
-    print(formattedOutput)
+def logScikitOutput(logFile, formattedOutput):
     logFile.write(formattedOutput)
     logFile.write("\n")
 
 
-def formatTrainingOutput(learnerOutput):
+def formatScikitOutput(regr, test_x, test_y, test_pred):
     formattedOutput = "\n"
-    formattedOutput += "Training parameters:\n"
-    formattedOutput += "\tIterations: " + str(learnerOutput[0]) + "\n"
-    formattedOutput += "\tLearning rate: " + str(learnerOutput[1]) + "\n"
-    formattedOutput += "\tStarting weights: " + str(learnerOutput[2]) + "\n"
+    formattedOutput += "Coefficients:" + str(regr.coef_) + "\n"
+    formattedOutput += "Mean squared error:" + str(mean_squared_error(test_y, test_pred))
 
-    derivativeErrors = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[3]]
-    weights = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[4]]
-
-    formattedOutput += "Training results:\n"
-    formattedOutput += "\tFinal derivative error per attribute: " + str(derivativeErrors) + "\n"
-    formattedOutput += "\tFinal weight per attribute: " + str(weights) + "\n"
-    formattedOutput += "\tFinal mean squared error: " + str(learnerOutput[5])
-    return formattedOutput
-
-
-def formatTestOutput(learnerOutput):
-    formattedOutput = "\n"
-
-    derivativeErrors = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[0]]
-    weights = [round(element, LOG_DECIMAL_PLACES) for element in learnerOutput[1]]
-
-    formattedOutput += "Test results:\n"
-    formattedOutput += "\tDerivative error per attribute: " + str(derivativeErrors) + "\n"
-    formattedOutput += "\tWeights per attribute: " + str(weights) + "\n"
-    formattedOutput += "\tTest mean squared error: " + str(learnerOutput[2]) + "\n"
     return formattedOutput
 
 
