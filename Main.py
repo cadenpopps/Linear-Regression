@@ -3,29 +3,47 @@ import sys
 
 def Main():
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("Not enough arguments, please provide the filename of the dataset.")
         return
 
 
-    try:
-        print("Trying to load dataset ", sys.argv[1])
-        data = pd.read_csv(sys.argv[1])
-    except FileNotFoundError:
-        print("File", sys.argv[1], " not found, exiting.")
-        return
+    data = safeLoadDataset(sys.argv[1])
+
+    iterations = 200
+    if len(sys.argv) >= 3:
+        iterations = int(sys.argv[2])
+        print("Iterations:", iterations, "(set by user)")
     else:
-        weights = [1, 1, 1, 1, 1, 1]
-        learningRate = .005
-        iterations = 200
+        print("Iterations:", iterations, "(default)")
 
-        for i in range(iterations):
-            dE = predict(data, weights, i)
-            weights = calculateNewWeights(weights, dE, learningRate)
-            if i == iterations - 1:
-                print("Final derivative errors: ", dE)
+    learningRate = .001
+    if len(sys.argv) >= 4:
+        learningRate = int(sys.argv[3])
+        print("Learning rate:", learningRate, "(set by user)")
+    else:
+        print("Learning rate:", learningRate, "(default)")
 
-        print("Final weights: ", weights)
+    weights = [1, 1, 1, 1, 1, 1]
+
+    for i in range(iterations):
+        dE = predict(data, weights, i)
+        weights = calculateNewWeights(weights, dE, learningRate)
+        if i == iterations - 1:
+            print("Final derivative errors:", dE)
+
+    print("Final weights:", weights)
+
+
+def safeLoadDataset(filename):
+    try:
+        print("Trying to load dataset:", filename)
+        data = pd.read_csv(filename)
+        print("Successfully loaded dataset:", filename)
+        return data
+    except FileNotFoundError:
+        print("File", filename, " not found, exiting.")
+        return
 
 
 def calculateNewWeights(weights, dE, learningRate):
