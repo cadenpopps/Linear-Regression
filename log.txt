@@ -7,7 +7,24 @@ Training results:
 	Final derivative error per attribute: [-0.0303, 0.0381, 0.0008, 0.0016, -0.0016, 0.0044]
 	Final weight per attribute: [0.5232, -0.7159, 0.4042, 0.4323, 0.633, 0.862]
 	Final mean squared error: 4.877004617678476
+
 Test results:
 	Derivative error per attribute: [-0.2358, -0.0901, -0.2264, -0.2412, -0.2414, -0.3355]
 	Weights per attribute: [0.5232, -0.7159, 0.4042, 0.4323, 0.633, 0.862]
 	Test mean squared error: 4.7310144232120726
+
+
+Training parameters:
+	Iterations: 200
+	Learning rate: 0.001
+	Starting weights: [1, 1, 1, 1, 1, 1]
+Training results:
+	Final derivative error per attribute: [0.6073, 1.185, 0.1526, 0.0657, -0.3087, -0.7614]
+	Final weight per attribute: [0.4772, 0.5032, 0.3632, 0.385, 0.4498, 0.6972]
+	Final mean squared error: 5.6964594547925556
+
+Test results:
+	Derivative error per attribute: [0.4539, 1.084, -0.0436, -0.0881, -0.5115, -1.0982]
+	Weights per attribute: [0.4772, 0.5032, 0.3632, 0.385, 0.4498, 0.6972]
+	Test mean squared error: 5.53222319132545
+

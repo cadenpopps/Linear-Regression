@@ -15,6 +15,7 @@ def Main():
 
     logFile = safeLoadFile(LOG_FILENAME, "a")
 
+
     print("\nBegin learning...")
     learner = Learner.Learner(trainingDataset, iterations, learningRate, startingWeights)
     trainingOutput = learner.learnSet(trainingDataset)
@@ -26,8 +27,7 @@ def Main():
     print("Testing complete!")
     logLearnerOutput(logFile, formatTestOutput(testOutput))
 
-    print("\nLogging results to", LOG_FILENAME)
-
+    print("Logging results to", LOG_FILENAME)
 
 
 def handleCommandLineParameters():
@@ -89,6 +89,7 @@ def safeLoadFile(filename, mode):
 def logLearnerOutput(logFile, formattedOutput):
     print(formattedOutput)
     logFile.write(formattedOutput)
+    logFile.write("\n")
 
 
 def formatTrainingOutput(learnerOutput):
@@ -117,7 +118,7 @@ def formatTestOutput(learnerOutput):
     formattedOutput += "Test results:\n"
     formattedOutput += "\tDerivative error per attribute: " + str(derivativeErrors) + "\n"
     formattedOutput += "\tWeights per attribute: " + str(weights) + "\n"
-    formattedOutput += "\tTest mean squared error: " + str(learnerOutput[2])
+    formattedOutput += "\tTest mean squared error: " + str(learnerOutput[2]) + "\n"
     return formattedOutput
 
 
