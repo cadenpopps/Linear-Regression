@@ -3,6 +3,8 @@ import sys
 sys.path.append(".")
 import Learner
 
+DEFAULT_TRAINING_DATASET = "http://cadenpopps.com/machine-learning/training.data"
+DEFAULT_TESTING_DATASET = "http://cadenpopps.com/machine-learning/full.data"
 DEFAULT_ITERATIONS = 100
 DEFAULT_LEARNING_RATE = .001
 DEFAULT_STARTING_WEIGHT = 1
@@ -32,15 +34,20 @@ def Main():
 
 def handleCommandLineParameters():
 
-    if len(sys.argv) < 2:
-        print("Not enough arguments, please provide the filename of the training dataset.")
-        return
-
     print()
-    trainingDataset = safeLoadDataset(sys.argv[1])
-    testDataset = trainingDataset
+
+    trainingDataset = 0
+    testDataset = 0
+
+    if len(sys.argv) >= 2:
+        trainingDataset = safeLoadDataset(sys.argv[1])
+    else:
+        trainingDataset = safeLoadDataset(DEFAULT_TRAINING_DATASET)
+
     if len(sys.argv) >= 3:
         testDataset = safeLoadDataset(sys.argv[2])
+    else:
+        testDataset = safeLoadDataset(DEFAULT_TESTING_DATASET)
 
     iterations = DEFAULT_ITERATIONS
     if len(sys.argv) >= 4:

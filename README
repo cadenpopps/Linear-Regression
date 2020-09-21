@@ -1,0 +1,30 @@
+Caden Popps
+Machine Learning Project 1
+
+
+Required Libraries:
+	pandas
+	sklearn
+
+
+Instructions:
+	Part1.py showcases my learner, which can take iterations, learning rate, and starting weights as parameters. Syntax is as follows:
+
+			python Part1.py [training_set.data] [test_set.data] [iterations] [learning_rate] [default_weight]
+
+		With default values
+			training_set = http://
+			training_set = http://
+			iterations = 100
+			learning_rate = .001
+			default_weight = 1
+
+		All arguments are optional. Once complete, Part1.py outputs the results to log.txt
+
+
+	Part2.py showcases the sklearn linear_model. This program can take the training set and test set as parameters as well. Syntax is as follows:
+
+			python Part2.py [training_set.data] [test_set.data]
+
+		Arguments are again optional. Once complete, Part2.py outputs the results to scikit_log.txt
+

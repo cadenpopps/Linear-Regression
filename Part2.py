@@ -1,10 +1,11 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import sys
 sys.path.append(".")
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
 
+DEFAULT_TRAINING_DATASET = "http://cadenpopps.com/machine-learning/training.data"
+DEFAULT_TESTING_DATASET = "http://cadenpopps.com/machine-learning/full.data"
 DEFAULT_ITERATIONS = 100
 DEFAULT_LEARNING_RATE = .001
 DEFAULT_STARTING_WEIGHT = 1
@@ -32,31 +33,24 @@ def Main():
 
     logScikitOutput(logFile, formatScikitOutput(regr, test_x, test_y, test_pred))
 
-    plot_x = [x[1] for x in test_x]
-    print(len(plot_x))
-    print(len(test_y))
-    plt.scatter(plot_x, test_y,  color='black')
-    plt.plot(plot_x, test_pred, color='blue', linewidth=3)
-
-    plt.xticks(())
-    plt.yticks(())
-
-    plt.show()
-
     print("Logging results to", LOG_FILENAME)
 
 
 def handleCommandLineParameters():
 
-    if len(sys.argv) < 2:
-        print("Not enough arguments, please provide the filename of the training dataset.")
-        return
+    trainingDataset = 0
+    testDataset = 0
 
-    print()
-    trainingDataset = safeLoadDataset(sys.argv[1])
-    testDataset = trainingDataset
+    if len(sys.argv) >= 2:
+        trainingDataset = safeLoadDataset(sys.argv[1])
+    else:
+        trainingDataset = safeLoadDataset(DEFAULT_TRAINING_DATASET)
+
     if len(sys.argv) >= 3:
         testDataset = safeLoadDataset(sys.argv[2])
+    else:
+        testDataset = safeLoadDataset(DEFAULT_TESTING_DATASET)
+
 
     return trainingDataset, testDataset
 
